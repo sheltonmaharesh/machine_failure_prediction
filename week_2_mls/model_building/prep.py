@@ -11,9 +11,20 @@ from sklearn.preprocessing import LabelEncoder
 from huggingface_hub import login, HfApi
 
 # Define constants for the dataset and output paths
-api = HfApi(token=os.getenv("HF_TOKEN"))
-DATASET_PATH = "hf://datasets/sheltonmaharesh/machine-failure-prediction/machine-failure-prediction.csv"
-df = pd.read_csv(DATASET_PATH)
+# HfApi() picks up token from env automatically (HUGGINGFACE_HUB_TOKEN or HF_TOKEN)
+api = HfApi()
+
+# Get a token explicitly for hf_hub_download (optional if env is present)
+HF_TOKEN = os.getenv("HUGGINGFACE_HUB_TOKEN") or os.getenv("HF_TOKEN")
+
+csv_path = hf_hub_download(
+    repo_id="Sheltonmaharesh/machine-failure-prediction",
+    repo_type="dataset",
+    filename="machine-failure-prediction.csv",
+    token=HF_TOKEN,
+)
+df = pd.read_csv(csv_path)
+
 print("Dataset loaded successfully.")
 
 # Drop the unique identifier
@@ -39,13 +50,16 @@ Xtest.to_csv("Xtest.csv",index=False)
 ytrain.to_csv("ytrain.csv",index=False)
 ytest.to_csv("ytest.csv",index=False)
 
-
 files = ["Xtrain.csv","Xtest.csv","ytrain.csv","ytest.csv"]
+print("Dataset converted to train & test.")
+
+api = HfApi(token=HF_TOKEN)
+print(HF_TOKEN)
 
 for file_path in files:
     api.upload_file(
         path_or_fileobj=file_path,
         path_in_repo=file_path.split("/")[-1],  # just the filename
-        repo_id="sheltonmaharesh/machine-failure-prediction",
+        repo_id="Sheltonmaharesh/machine-failure-prediction",
         repo_type="dataset",
     )

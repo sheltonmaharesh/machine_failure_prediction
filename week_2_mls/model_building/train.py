@@ -15,12 +15,21 @@ import os
 from huggingface_hub import login, HfApi, create_repo
 from huggingface_hub.utils import RepositoryNotFoundError, HfHubHTTPError
 
-api = HfApi()
+# Get a token explicitly for hf_hub_download (optional if env is present)
+HF_TOKEN = os.getenv("HUGGINGFACE_HUB_TOKEN") or os.getenv("HF_TOKEN")
 
-Xtrain_path = "hf://datasets/sheltonmaharesh/machine-failure-prediction/Xtrain.csv"
-Xtest_path = "hf://datasets/sheltonmaharesh/machine-failure-prediction/Xtest.csv"
-ytrain_path = "hf://datasets/sheltonmaharesh/machine-failure-prediction/ytrain.csv"
-ytest_path = "hf://datasets/sheltonmaharesh/machine-failure-prediction/ytest.csv"
+api = HfApi(token=HF_TOKEN)
+print(HF_TOKEN)
+
+##HF_TOKEN = userdata.get("HF_TOKEN")  # None is fine for public #Use for unit testing in Collab
+REPO_ID  = "Sheltonmaharesh/machine-failure-prediction"  # note capital S
+
+Xtrain_path = hf_hub_download(repo_id=REPO_ID, repo_type="dataset", filename="Xtrain.csv", token=HF_TOKEN)
+Xtest_path  = hf_hub_download(repo_id=REPO_ID, repo_type="dataset", filename="Xtest.csv",  token=HF_TOKEN)
+ytrain_path = hf_hub_download(repo_id=REPO_ID, repo_type="dataset", filename="ytrain.csv", token=HF_TOKEN)
+ytest_path  = hf_hub_download(repo_id=REPO_ID, repo_type="dataset", filename="ytest.csv",  token=HF_TOKEN)
+
+print('Data copied from Hugging Face')
 
 Xtrain = pd.read_csv(Xtrain_path)
 Xtest = pd.read_csv(Xtest_path)
@@ -87,12 +96,18 @@ print(classification_report(ytest, y_pred_test))
 
 # Save best model
 joblib.dump(best_model, "best_machine_failure_model_v1.joblib")
+print("Best model dumped using joblib")
+
 
 # Upload to Hugging Face
-repo_id = "sheltonmaharesh/machine_failure_model"
+repo_id = "Sheltonmaharesh/machine_failure_model"
 repo_type = "model"
 
-api = HfApi(token=os.getenv("HF_TOKEN"))
+# Get a token explicitly for hf_hub_download (optional if env is present)
+HF_TOKEN = os.getenv("HUGGINGFACE_HUB_TOKEN") or os.getenv("HF_TOKEN")
+
+api = HfApi(token=HF_TOKEN)
+print(HF_TOKEN)
 
 # Step 1: Check if the space exists
 try:
@@ -100,7 +115,7 @@ try:
     print(f"Model Space '{repo_id}' already exists. Using it.")
 except RepositoryNotFoundError:
     print(f"Model Space '{repo_id}' not found. Creating new space...")
-    create_repo(repo_id=repo_id, repo_type=repo_type, private=False)
+    create_repo(repo_id=repo_id, repo_type=repo_type, private=False,token=HF_TOKEN)
     print(f"Model Space '{repo_id}' created.")
 
 # create_repo("best_machine_failure_model", repo_type="model", private=False)

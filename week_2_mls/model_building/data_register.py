@@ -3,7 +3,7 @@ from huggingface_hub import HfApi, create_repo
 import os
 
 
-repo_id = "sheltonmaharesh/machine-failure-prediction"
+repo_id = "Sheltonmaharesh/machine-failure-prediction"
 repo_type = "dataset"
 
 # Initialize API client
